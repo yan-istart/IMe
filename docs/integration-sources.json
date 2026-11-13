@@ -1,0 +1,76 @@
+{
+  "checkedOn": "2026-11-05",
+  "sources": [
+    {
+      "repository": "https://github.com/aqiu817/dsh-plugin-continue-on-limit",
+      "integration": "reference-only; no source vendored",
+      "commit": "7165eb01bc1e640a469f195415b0c01aa6841e56",
+      "licenseFile": "LICENSE",
+      "licenseSha256": "64125e31b715e6bfb0927ce114a3e2d63f2ff0cf04de6dfa2c9a899dc4184521",
+      "licenseHeader": [
+        "MIT License",
+        "",
+        "Copyright (c) 2026 Rina",
+        ""
+      ]
+    },
+    {
+      "repository": "https://github.com/SAOS-3624/dsh-see-now",
+      "integration": "reference-only; no source vendored",
+      "commit": "dddcfaece7f8bf91fd13a26eda996b08dac8a383",
+      "licenseFile": "LICENSE",
+      "licenseSha256": "0f4587918026d801b3d9f77de89be59afd06301034f3f9bed5b6a1b1f2fd1c1d",
+      "licenseHeader": [
+        "                                 Apache License",
+        "                           Version 2.0, January 2004",
+        "                        http://www.apache.org/licenses/",
+        ""
+      ]
+    },
+    {
+      "repository": "https://github.com/zydg/dsh-cost",
+      "integration": "reference-only; no source vendored",
+      "commit": "08077e4318316230a355dfbe58608e13876dd104",
+      "licenseFile": "LICENSE",
+      "licenseSha256": "25047602091806a3380b9c53478abfca5763ab686aa80e5313cc5935b5bbb6e5",
+      "licenseHeader": [
+        "MIT License",
+        "",
+        "Copyright (c) 2026 dsh-conversation-usage contributors",
+        ""
+      ]
+    },
+    {
+      "repository": "https://github.com/kovey/dsh-memory",
+      "integration": "reference-only; no source vendored",
+      "commit": "513eff904252f4f91dbeaa787e2062a9bf2c754c",
+      "licenseStatus": "not located at repository root; no copying authorized by this check"
+    },
+    {
+      "repository": "https://github.com/jasen215/dsh-continual-harness",
+      "integration": "reference-only; no source vendored",
+      "commit": "0432de6bb0d66f420f1b40f3889833d14d385f9e",
+      "licenseFile": "LICENSE",
+      "licenseSha256": "cdd930c733f93f5979199aaeb537331624d73da3b49e49019d3511e57dd8329f",
+      "licenseHeader": [
+        "MIT License",
+        "",
+        "Copyright (c) 2026 dsh-continual-harness contributors",
+        ""
+      ]
+    },
+    {
+      "repository": "https://github.com/Alice-Marx/dsh-model-router",
+      "integration": "reference-only; no source vendored",
+      "commit": "8b7e1e1bb56a367a489e46da9eedf78b4553f5ca",
+      "licenseFile": "LICENSE",
+      "licenseSha256": "6a9cc5b0710c2f2e938d6c58e598278caf57114b8159f314244c3543b0781d6f",
+      "licenseHeader": [
+        "MIT License",
+        "",
+        "Copyright (c) 2026 ljwei-stak",
+        ""
+      ]
+    }
+  ]
+}

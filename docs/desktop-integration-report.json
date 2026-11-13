@@ -1,0 +1,32 @@
+{
+  "passed": true,
+  "hostVersion": "0.2.1-rc.5",
+  "profile": "desktop",
+  "verifiedAt": "2026-11-04T12:28:30.423Z",
+  "sessionTitle": "IMe 插件状态验证",
+  "model": "DeepSeek-V4.1-Flash",
+  "tool": "ime_status",
+  "toolCallsInVerification": 1,
+  "verification": "Native desktop conversation and trajectory show a successful real model tool call and canonical response",
+  "hostCapabilities": {
+    "computerUse": false,
+    "tokenMeter": false,
+    "compaction": false,
+    "modelGateway": false
+  },
+  "auditEventCounts": [
+    {
+      "type": "ime.host.mounted",
+      "count": 1
+    },
+    {
+      "type": "ime.host.session_event",
+      "count": 25
+    },
+    {
+      "type": "ime.host.tool_result",
+      "count": 1
+    }
+  ],
+  "latestTool": "ime_status"
+}

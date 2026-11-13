@@ -1,0 +1,61 @@
+{
+  "name": "dsh-ime",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Local-first Intelligent Memory & Execution plugin for DSH",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./core": "./dist/core/runtime.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "dist",
+    "client.js",
+    "locale/*.json",
+    "icon.svg",
+    "cordis.patch.yml",
+    "README.md",
+    "docs",
+    "scripts/open-dashboard.mjs",
+    "scripts/prepare-native-provider.mjs"
+  ],
+  "engines": {
+    "node": ">=24.9.0",
+    "dsh": "0.2.1-rc.5"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-layout",
+        "@deepseek-ai/dsh-client-ui-sidebar"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit && tsc -p tsconfig.tests.json",
+    "test": "tsx --test tests/*.test.ts",
+    "demo": "tsx examples/mock-task.ts",
+    "check": "npm run typecheck && npm test && npm run build",
+    "test:host": "npm run build && node scripts/verify-dsh.mjs",
+    "dashboard": "node scripts/open-dashboard.mjs",
+    "demo:dashboard": "tsx examples/dashboard.ts",
+    "benchmark": "tsx scripts/benchmark.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}

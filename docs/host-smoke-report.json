@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "hostVersion": "0.2.1-rc.5",
+  "checks": [
+    "product-improvement session log upload defaults to disabled",
+    "real tool dispatch + canonical output validation",
+    "real prepared LLM stream observed with disjoint cache usage",
+    "monotonic tools.guard blocks direct Provider tool bypass",
+    "real Agent Loop executes task-create/action/verify/finish against isolated desktop tools",
+    "real pre-step persists IMe context; successful task proposes memory, candidate skill and review",
+    "real max-tokens turn/end resumes from idle twice, then stops at durable burst cap",
+    "official checkpoint policy and token meter already supplied by host composition",
+    "real loader disable unregisters tool and releases runtime lock",
+    "real tools/result hook persisted in audit",
+    "real loader reload and second dispatch",
+    "real prepared LLM stream reserves and settles 82 micro-units",
+    "budget denial blocks actual adapter dispatch and pauses session budget"
+  ],
+  "hostCapabilities": {
+    "computerUse": false,
+    "tokenMeter": false,
+    "compaction": false,
+    "modelGateway": true
+  },
+  "verifiedAt": "2026-11-05T08:34:40.303Z"
+}

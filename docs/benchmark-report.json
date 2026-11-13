@@ -1,0 +1,430 @@
+{
+  "scope": "deterministic mock simulator only; B uses a configured context-size proxy, not real DSH compaction; prices are fixtures, not real quotes",
+  "verifiedAt": "2026-11-05T08:03:40.976Z",
+  "stress": {
+    "actions": 1000,
+    "checkpoints": 1000,
+    "modelRequests": 100,
+    "gracefulRestarts": 20
+  },
+  "durationMs": 708,
+  "totals": [
+    {
+      "mode": "A",
+      "successes": 20,
+      "costMicro": 8800
+    },
+    {
+      "mode": "B",
+      "successes": 20,
+      "costMicro": 6800
+    },
+    {
+      "mode": "C",
+      "successes": 20,
+      "costMicro": 240
+    }
+  ],
+  "rows": [
+    {
+      "task": 1,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 240
+        }
+      ]
+    },
+    {
+      "task": 2,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    },
+    {
+      "task": 3,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    },
+    {
+      "task": 4,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    },
+    {
+      "task": 5,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    },
+    {
+      "task": 6,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    },
+    {
+      "task": 7,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    },
+    {
+      "task": 8,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    },
+    {
+      "task": 9,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    },
+    {
+      "task": 10,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    },
+    {
+      "task": 11,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    },
+    {
+      "task": 12,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    },
+    {
+      "task": 13,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    },
+    {
+      "task": 14,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    },
+    {
+      "task": 15,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    },
+    {
+      "task": 16,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    },
+    {
+      "task": 17,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    },
+    {
+      "task": 18,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    },
+    {
+      "task": 19,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    },
+    {
+      "task": 20,
+      "measurements": [
+        {
+          "mode": "A",
+          "success": true,
+          "amountMicro": 440
+        },
+        {
+          "mode": "B",
+          "success": true,
+          "amountMicro": 340
+        },
+        {
+          "mode": "C",
+          "success": true,
+          "amountMicro": 0
+        }
+      ]
+    }
+  ]
+}

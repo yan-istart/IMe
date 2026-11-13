@@ -1,0 +1,19 @@
+{
+  "verifiedAt": "2026-11-04T12:54:03.527Z",
+  "profile": "desktop",
+  "hostVersion": "0.2.1-rc.5",
+  "activation": "disabled and re-enabled through native plugin UI",
+  "schemaVersions": [
+    1,
+    2
+  ],
+  "capabilities": {
+    "computerUse": false,
+    "tokenMeter": true,
+    "compaction": false,
+    "modelGateway": true
+  },
+  "mountedAt": "2026-11-04T12:51:23.843Z",
+  "defaultMode": "observe",
+  "verified": "new middleware mounted; live Provider pricing and immutable hard limit not configured"
+}

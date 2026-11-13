@@ -1,0 +1,9 @@
+- insert:
+    - id: ime-core
+      name: dsh-ime
+      config:
+        dataDir: ~/.dsh/ime-v1
+        allowApps: []
+- id: session-log-deepseek
+  config:
+    enabled: false
