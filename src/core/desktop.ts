@@ -8,6 +8,7 @@ export interface Action {
   id: string; app: string; kind: 'click'|'input'|'scroll'; target: string;
   risk: 'read_only'|'reversible_write'|'sensitive_write'|'irreversible';
   expectedFingerprint: string; timeoutMs: number;precondition?:string;assertState?:string;
+  skillRef?:{id:string;version:number};
 }
 export interface DesktopPort {
   observe(app: string, signal: AbortSignal): Promise<Observation>;
@@ -19,37 +20,41 @@ export interface DesktopPort {
 export class DesktopController {
   private tail: Promise<unknown> = Promise.resolve();
   private active = new Map<string, AbortController>();
+  private observing=new Map<AbortController,string|undefined>();
   private stopped = false;
-  constructor(private store: Store, private tasks: Tasks, private provider: DesktopPort, private allowApps: readonly string[],private permissions?:Permissions,private lease?:DesktopLease,private onFailure?:(taskId:string)=>void,private processFrame?:(frame:Frame,reason:'change'|'verify')=>string|undefined) {}
-  observe(app:string,signal:AbortSignal) {
+  constructor(private store: Store, private tasks: Tasks, private provider: DesktopPort, private allowApps: readonly string[],private permissions?:Permissions,private lease?:DesktopLease,private onFailure?:(taskId:string)=>void,private processFrame?:(frame:Frame,reason:'change'|'verify',actionId?:string)=>string|undefined,private validateAction?:(action:Action)=>void) {}
+  observe(app:string,signal:AbortSignal,taskId?:string) {
     if(!this.allowApps.includes(app))throw new Error('APP_DENIED');
     // A bare observation also joins the serial queue: it must not interleave
     // with an action or hold a stale view across another session's click.
     const work=this.tail.then(async()=>{
       if(this.stopped)throw new Error('STOPPED');
       signal.throwIfAborted();
-      this.lease?.acquire();
-      try{return await this.observeState(app,signal,'change');}
-      finally{this.lease?.release();}
+      const controller=new AbortController(),combined=AbortSignal.any([signal,controller.signal]);
+      this.observing.set(controller,taskId);
+      try{this.lease?.acquire();return await this.observeState(app,combined,'change');}
+      finally{this.observing.delete(controller);this.lease?.release();}
     });
     this.tail=work.catch(()=>{});
     return work;
   }
-  private async observeState(app:string,signal:AbortSignal,reason:'change'|'verify'):Promise<Observation> {
+  private async observeState(app:string,signal:AbortSignal,reason:'change'|'verify',actionId?:string):Promise<Observation> {
     const raw=await this.provider.observe(app,signal);
-    const reference=raw.frame?this.processFrame?.(raw.frame,reason):undefined;
+    const reference=raw.frame?this.processFrame?.(raw.frame,reason,actionId):undefined;
     return {fingerprint:raw.fingerprint,state:raw.state,evidenceRef:reference ?? raw.evidenceRef};
   }
   stop(taskId?: string): void {
     if (taskId === undefined) this.stopped = true;
     for (const [id, controller] of this.active) if (!taskId || taskId === id) controller.abort(new Error('STOPPED'));
+    for(const [controller,id] of this.observing)if(!taskId||taskId===id)controller.abort(new Error('STOPPED'));
   }
   async run(taskId: string, action: Action, verify: (observation: Observation) => boolean,externalSignal?:AbortSignal): Promise<Observation> {
     const work = this.tail.then(async () => {
       externalSignal?.throwIfAborted();
-      if (this.stopped || this.tasks.get(taskId).status !== 'running') throw new Error('STOPPED');
+      if (this.stopped || !this.tasks.executionAllowed(taskId)) throw new Error('STOPPED');
       if (!this.allowApps.includes(action.app) || this.tasks.get(taskId).app !== action.app) throw new Error('APP_DENIED');
       action=this.provider.canonical?.(action) ?? action;
+      this.validateAction?.(action);
       const sensitive=action.risk==='sensitive_write'||action.risk==='irreversible';
       if(!['read_only','reversible_write','sensitive_write','irreversible'].includes(action.risk))throw new Error('INVALID_RISK');
       if(sensitive&&!this.permissions?.approved(taskId,action)) {
@@ -64,10 +69,11 @@ export class DesktopController {
       const timer = setTimeout(() => controller.abort(new Error('ACTION_TIMEOUT')),action.timeoutMs);
       let dispatched = false;
       try {
-        const before = await this.observeState(action.app,signal,'change');
+        const before = await this.observeState(action.app,signal,'change',action.id);
         signal.throwIfAborted();
         if (before.fingerprint !== action.expectedFingerprint || (action.precondition!==undefined&&action.precondition!==before.state)) throw new Error('ENVIRONMENT_MISMATCH');
-        if (this.tasks.get(taskId).status !== 'running') throw new Error('STOPPED');
+        if (!this.tasks.executionAllowed(taskId)) throw new Error('STOPPED');
+        this.validateAction?.(action);
         this.store.transaction(() => {
           if(sensitive&&!this.permissions?.consume(taskId,action))throw new Error('APPROVAL_REQUIRED');
           this.store.db.prepare('INSERT INTO actions VALUES(?,?,?,?)').run(action.id,taskId,'executing',JSON.stringify({...action,beforeState:before.state}));
@@ -76,9 +82,9 @@ export class DesktopController {
         dispatched = true;
         await this.provider.execute(action,signal);
         signal.throwIfAborted();
-        const after = await this.observeState(action.app,signal,'verify');
+        const after = await this.observeState(action.app,signal,'verify',action.id);
         signal.throwIfAborted();
-        if (this.tasks.get(taskId).status !== 'running') throw new Error('STOPPED');
+        if (!this.tasks.executionAllowed(taskId)) throw new Error('STOPPED');
         if ((action.assertState!==undefined&&after.state!==action.assertState)||!verify(after)) throw new Error('VERIFICATION_FAILED');
         this.store.transaction(() => {
           this.store.db.prepare("UPDATE actions SET state='verified',data=? WHERE id=?").run(JSON.stringify({...action,beforeState:before.state,verifiedState:after.state}),action.id);
@@ -102,7 +108,10 @@ export class DesktopController {
   async resumeAll(){await this.tail;this.stopped=false;}
   async reset(app:string,caseId:string,signal:AbortSignal) {
     if(!this.provider.reset||!this.allowApps.includes(app))throw new Error('TEST_ENVIRONMENT_UNAVAILABLE');
-    const work=this.tail.then(async()=>{if(this.stopped)throw Error('STOPPED');this.lease?.acquire();try{await this.provider.reset!(app,caseId,signal);}finally{this.lease?.release();}});
+    const work=this.tail.then(async()=>{
+      if(this.stopped)throw Error('STOPPED');const controller=new AbortController(),combined=AbortSignal.any([signal,controller.signal]);this.observing.set(controller,undefined);
+      try{this.lease?.acquire();await this.provider.reset!(app,caseId,combined);}finally{this.observing.delete(controller);this.lease?.release();}
+    });
     this.tail=work.catch(()=>{});return work;
   }
   async drain(): Promise<void> { await this.tail; }

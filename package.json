@@ -22,7 +22,8 @@
     "README.md",
     "docs",
     "scripts/open-dashboard.mjs",
-    "scripts/prepare-native-provider.mjs"
+    "scripts/prepare-native-provider.mjs",
+    "scripts/acceptance.mjs"
   ],
   "engines": {
     "node": ">=24.9.0",
@@ -50,8 +51,9 @@
     "check": "npm run typecheck && npm test && npm run build",
     "test:host": "npm run build && node scripts/verify-dsh.mjs",
     "dashboard": "node scripts/open-dashboard.mjs",
+    "acceptance": "node scripts/acceptance.mjs",
     "demo:dashboard": "tsx examples/dashboard.ts",
-    "benchmark": "tsx scripts/benchmark.ts"
+    "benchmark": "tsx scripts/benchmark.ts && tsx scripts/benchmark-workflows.ts"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

@@ -80,6 +80,7 @@ export class HostModelGateway {
     return stream;
   }
   private async *run(request: HostRequest, next: () => AsyncIterable<HostChunk>): AsyncGenerator<HostChunk> {
+    if(this.runtime.models.owns(request)){yield* next();return;}
     if (this.stopped) throw new Error('IME_GATEWAY_STOPPED');
     request.signal?.throwIfAborted();
     if (!request.provider || !request.model) throw new Error('IME_INVALID_ROUTE');
@@ -115,6 +116,7 @@ export class HostModelGateway {
     let invalidUsage=false;
     let finished=false;
     let cacheWrites=false;
+    const started=performance.now();
     try {
       for await (const chunk of next()) {
         if (this.stopped) throw new Error('IME_GATEWAY_STOPPED');
@@ -144,6 +146,12 @@ export class HostModelGateway {
       db.prepare('UPDATE model_requests SET state=?,usage=?,certainty=?,finished_at=? WHERE id=?')
         .run(state,usage ? JSON.stringify(usage) : null,actual ? (route ? 'actual' : 'unpriced') : 'unknown',new Date().toISOString(),id);
       this.runtime.store.event('ime.model.finished',{ requestId:id,sessionId:session,provider:request.provider,model:request.model,state,certainty:actual ? (route ? 'actual' : 'unpriced') : 'unknown' });
+      if(route) {
+        const verdict=trace?.taskId?this.runtime.tasks.get(trace.taskId).status:undefined;
+        this.runtime.router.feedback({requestId:id,...trace?.taskId?{taskId:trace.taskId}:{},provider:request.provider,model:request.model,category:request.purpose??'general',
+          success:state!=='finished'?false:verdict==='succeeded'?true:verdict==='failed'?false:null,
+          amount:Number(db.prepare('SELECT amount FROM usage_entries WHERE request_id=?').get(id)?.amount??0),currency:route.price.currency,latencyMs:performance.now()-started});
+      }
     }
   }
   private sessionTask(sessionId: string, currency: string): string {

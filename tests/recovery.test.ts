@@ -16,6 +16,8 @@ test('real process SIGKILL preserves uncertain action and outstanding budget; re
    const task=r.store.db.prepare('SELECT id,status FROM tasks LIMIT 1').get()!;assert.equal(task.status,'paused');
    assert.equal(r.store.db.prepare('SELECT state FROM actions').get()?.state,'uncertain');
    assert.equal(r.store.db.prepare('SELECT reserved FROM budgets').get()?.reserved,200);
+   const acceptance=r.acceptance.status()[0]!;assert.equal(acceptance.status,'interrupted');
+   assert.ok((await r.acceptance.result(acceptance.id) as {sampleCount:number}).sampleCount>=1);
    await assert.rejects(r.tasks.resume(String(task.id),async()=>true),/RECONCILIATION_REQUIRED/);
   }finally{await r.close();}
  }finally{rmSync(dir,{recursive:true,force:true});}

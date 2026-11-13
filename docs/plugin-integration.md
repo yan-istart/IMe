@@ -1,6 +1,6 @@
 # 插件按需整合记录
 
-核查日期：2026-11-05；目标宿主：本机 DSH 0.2.1-rc.5。本文将用户提供的插件清单对应到现有设计能力，区分直接复用、机制参考和待验收能力。不是把社区插件全部安装到同一 Profile。
+更新日期：2026-11-13；目标宿主：本机 DSH 0.2.1-rc.5。本文将用户提供的插件清单对应到现有设计能力，区分直接复用、机制参考和待验收能力。不是把社区插件全部安装到同一 Profile。
 
 | 预设能力 | 整合决定 | 当前验证及边界 |
 | --- | --- | --- |
@@ -8,11 +8,11 @@
 | 输出上限自动续跑 | 参考 aqiu817/dsh-plugin-continue-on-limit 的宿主事件机制，独立实现 HostRecovery | 真实 max-tokens → 空闲 → followup → 次数熔断已验证；不自动重试网络错误或重放桌面动作 |
 | 会话持久化 / 上下文 | 复用宿主 Checkpoint Policy、Compaction Basic、Tool Result Pruner、Image Offload、Token Meter | Checkpoint 与 Token Meter 在真实组合中确认；压缩与裁剪沿用宿主配置，不将包存在等同于当前 Agent 服务可用 |
 | 桌面与权限 | 复用已安装官方 macOS CUA；保留工具适配和审批、白名单、租约 | Provider 保持之前用户停止验收时的禁用状态；不启用 Windows Provider，不重试真实桌面任务 |
-| 视觉优化 | 现有 VisionPipeline 保留 ROI、变化筛选、脱敏与 TTL；参考 See Now 的按需采样思路 | 模拟帧验证通过；尚未把原生图片解码接入灰度管线，也未引入 See Now 常驻采集或拼图 |
+| 视觉优化 | 现有 VisionPipeline 保留 ROI、变化筛选、脱敏与 TTL；参考 See Now 的按需采样思路 | PNG 与宿主附件已接入灰度/脱敏管线，并提供本地多帧合图；不额外引入常驻采集驱动 |
 | 请求计量 / 成本 | 保留 IMe 的 llm/stream 账本、报价快照、预留结算；不叠加 dsh-cost 计费器 | 实际宿主请求和预算不足阻断通过；未知报价不推算费用，hardLimit=false |
 | 长期记忆 | 保留 SQLite FTS5、按应用召回、来源分级与候选审核 | 已有回归通过；kovey/dsh-memory 根目录 LICENSE / LICENSE.md / LICENSE.txt 未找到，未复制代码 |
 | 技能演化 / 自审 | 保留现有独立验证、不可变版本、复核发布与失败回滚；Continual Harness 作为机制参考 | 已有回归通过，不引入第二个记忆注入器或自动发布器 |
-| 模型路由 | 保留现有能力/隐私/预算筛选的路由建议 | 未引入 Alice-Marx 路由器；自动换模型和 V2 学习路由仍未实现 |
+| 模型路由 | 保留现有能力/隐私/预算筛选的路由建议 | 未引入第二个路由器；已实现受管模型的质量/费用反馈路由，不改写普通对话的宿主模型选择 |
 | 防循环 / 沙箱 / 子 Agent | 继续沿用官方组合中的相应策略 | 不安装第二套同类底层服务；`ime_status.hostComponents` 报告组合条目是否配置、是否启用，不能代替运行时权限或功能验收 |
 
 ## 自动续跑的配置与运行
@@ -42,10 +42,10 @@
 
 关键来源：[宿主续跑插件](https://github.com/aqiu817/dsh-plugin-continue-on-limit)、[官方 Session 组件](https://github.com/deepseek-ai/deepseek-harness/tree/master/packages/session)、[See Now](https://github.com/SAOS-3624/dsh-see-now)、[dsh-cost](https://github.com/zydg/dsh-cost)、[Continual Harness](https://github.com/jasen215/dsh-continual-harness)。
 
-## 本轮验证
+## 历史整合验证（2026-11-05）
 
 `npm run check`：79 项自动测试通过，包含 7 项新增恢复行为测试；严格类型检查与构建通过。
 
 `npm run test:host`：真实 DSH 0.2.1-rc.5 的 13 项检查通过，新增连续截断续跑/熔断和官方 Checkpoint/Token Meter 组合确认。使用隔离 Profile 和模拟 Provider，没有付费推理或真实桌面操作。
 
-原始设计中的真实桌面长任务、真实成本 A/B、Provider 最内层硬预算及 V2 动态学习路由仍待完成，不能因本次整合宣称全部预设能力已完成生产验收。
+当前扩展实现与 137 项测试见 design-coverage.md。动态路由、同步、OTLP、HTTP 请求门禁和验收工具已经实现；真实目标环境的长任务、成本 A/B 与 Provider 计费保证仍需实际证据，不用模拟结果代替。

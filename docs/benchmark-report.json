@@ -1,13 +1,13 @@
 {
   "scope": "deterministic mock simulator only; B uses a configured context-size proxy, not real DSH compaction; prices are fixtures, not real quotes",
-  "verifiedAt": "2026-11-05T08:03:40.976Z",
+  "verifiedAt": "2026-11-13T09:49:21.223Z",
   "stress": {
     "actions": 1000,
     "checkpoints": 1000,
     "modelRequests": 100,
     "gracefulRestarts": 20
   },
-  "durationMs": 708,
+  "durationMs": 1816,
   "totals": [
     {
       "mode": "A",

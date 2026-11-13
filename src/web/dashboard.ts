@@ -46,8 +46,14 @@ export class Dashboard {
         const db=this.runtime.store.db;
         if(url.pathname==='/api/state') {this.json(res,200,{...this.runtime.status(),hostCapabilities:this.capabilities,modelGateway:this.gateway?.status(),trace:db.prepare('SELECT * FROM audit_events ORDER BY seq DESC LIMIT 100').all(),reviews:db.prepare('SELECT * FROM reviews ORDER BY created_at DESC LIMIT 50').all(),metrics:this.metrics()});return;}
         if(url.pathname==='/api/memory'){this.json(res,200,this.runtime.knowledge.retrieve(url.searchParams.get('q') ?? '',textField(url.searchParams.get('app'),300)));return;}
-        if(url.pathname==='/api/timeline'){this.json(res,200,{actions:db.prepare('SELECT * FROM actions ORDER BY rowid DESC LIMIT 100').all(),checkpoints:db.prepare('SELECT * FROM checkpoints ORDER BY rowid DESC LIMIT 100').all()});return;}
+        if(url.pathname==='/api/timeline'){this.json(res,200,{actions:db.prepare('SELECT * FROM actions ORDER BY rowid DESC LIMIT 100').all(),checkpoints:db.prepare('SELECT * FROM checkpoints ORDER BY rowid DESC LIMIT 100').all(),keyframes:this.runtime.status().vision.keyframes});return;}
         if(url.pathname==='/api/balance'){this.json(res,200,await this.balance.get());return;}
+        if(url.pathname==='/api/sync/export'){this.json(res,200,this.runtime.sync.export());return;}
+        if(url.pathname==='/api/telemetry'){this.json(res,200,this.runtime.telemetry.batch(Number(url.searchParams.get('after')??0)));return;}
+        if(url.pathname==='/api/acceptance') {
+          const id=url.searchParams.get('id'),current=id?this.runtime.acceptance.status().find(job=>job.id===id):undefined;
+          this.json(res,200,!id?this.runtime.acceptance.status():current?.status==='running'?current:await this.runtime.acceptance.result(id));return;
+        }
         if(url.pathname==='/api/export'){
           const kind=url.searchParams.get('kind');
           const value=kind==='memory'?this.runtime.knowledge.listMemories():kind==='skills'?this.runtime.knowledge.listSkills():kind==='experience'?this.runtime.experience.recent(200):kind==='ledger'?db.prepare('SELECT * FROM usage_entries').all():{capabilities:this.capabilities,metrics:this.metrics(),schemaVersions:db.prepare('SELECT version FROM migrations').all(),trace:db.prepare('SELECT type,created_at FROM audit_events ORDER BY seq DESC LIMIT 200').all()};
@@ -69,11 +75,14 @@ export class Dashboard {
     switch(b.operation) {
       case 'pause_all':r.executionPaused=true;this.gateway?.pause();r.desktop?.stop(); for(const t of db.prepare("SELECT id FROM tasks WHERE status='running'").all())r.pause(String(t.id));return;
       case 'resume_all':r.executionPaused=false;this.gateway?.resume();await r.desktop?.resumeAll();return;
-      case 'task_create':if(!r.allowApps.includes(String(b.app)))throw Error('APP_DENIED');return r.tasks.create(textField(b.sessionId,200),textField(b.goal),textField(b.app,300),textField(b.limit,30),'USD');
-      case 'task_start':r.tasks.transition(id(),'ready');r.tasks.transition(id(),'running');return;
+      case 'task_create':if(!r.allowApps.includes(String(b.app)))throw Error('APP_DENIED');return r.tasks.create(textField(b.sessionId,200),textField(b.goal),textField(b.app,300),textField(b.limit,30),'USD',b.dependsOn as string[]|undefined);
+      case 'task_start':if(r.executionPaused)throw Error('STOPPED');if(r.tasks.get(id()).status==='created')r.tasks.transition(id(),'ready');r.tasks.transition(id(),'running');return;
+      case 'task_enqueue':if(r.tasks.get(id()).status==='created')r.tasks.transition(id(),'ready');return;
+      case 'task_depend':return r.tasks.depend(id(),textField(b.dependsOn,200));
+      case 'task_next':return r.nextTask(textField(b.sessionId,200));
       case 'task_pause':r.pause(id());return;
       case 'task_cancel':r.cancel(id());return;
-      case 'task_resume':return r.tasks.resume(id(),async checkpoint=>{
+      case 'task_resume':if(r.executionPaused)throw Error('STOPPED');return r.tasks.resume(id(),async checkpoint=>{
         const task=r.tasks.get(id());
         if(task.app==='ime:model')return true;
         if(!r.desktop||!checkpoint)return false;
@@ -93,7 +102,8 @@ export class Dashboard {
       }
       case 'reconcile_cost':return r.costs.reconcile(id(),{inputTokens:Number(b.inputTokens),cachedInputTokens:Number(b.cachedInputTokens),outputTokens:Number(b.outputTokens)});
       case 'skill_revise':{
-        const previous=r.knowledge.skill(id(),this.version(b.version));return r.knowledge.proposeSkill({...previous.document,goal:textField(b.goal),precondition:textField(b.precondition),steps:b.steps as typeof previous.document.steps},id());
+        const previous=r.knowledge.skill(id(),this.version(b.version));return r.knowledge.proposeSkill({...previous.document,goal:textField(b.goal),precondition:textField(b.precondition),steps:b.steps as typeof previous.document.steps,
+          ...b.dependencies!==undefined?{dependencies:b.dependencies as typeof previous.document.dependencies}:{}},id());
       }
       case 'cap':return r.costs.setLimit(textField(b.scope,30) as 'session'|'day'|'account',textField(b.key,200),textField(b.currency,3),textField(b.limit,30));
       case 'memory_create':return {id:r.knowledge.propose({kind:'fact',content:textField(b.content),app:textField(b.app,300),trust:'user',sourceEventIds:[],...typeof b.factKey==='string'&&b.factKey.trim()?{factKey:b.factKey}:{}})};
@@ -102,12 +112,29 @@ export class Dashboard {
       case 'memory_archive':return r.knowledge.archive(id());
       case 'memory_delete':return r.knowledge.deleteMemory(id());
       case 'skill_publish':return r.knowledge.publish(id(),this.version(b.version));
+      case 'skill_distill':return r.distillSkill(b.taskIds as string[]);
+      case 'skill_compare':return r.compareSkills(id(),this.version(b.baselineVersion),this.version(b.version));
       case 'skill_review_publish':{
         const note=typeof b.note==='string'&&b.note.trim()?textField(b.note,2000):'用户在控制台复核后发布';
         return r.knowledge.publishReviewed(id(),this.version(b.version),note,r.learning.minSuccesses);
       }
       case 'skill_rollback':return r.knowledge.rollback(id(),this.version(b.version));
       case 'skill_evaluate':return r.evaluateSkill(id(),this.version(b.version));
+      case 'sync_exchange':return r.sync.exchange();
+      case 'sync_import':return r.sync.import(b.envelope);
+      case 'sync_review':if(typeof b.allow!=='boolean')throw Error('INVALID_APPROVAL');return r.sync.apply(textField(b.key,100),b.allow);
+      case 'telemetry_flush':return r.telemetry.flush();
+      case 'transport_reset':if(!r.models.http)throw Error('HTTP_TRANSPORT_NOT_CONFIGURED');return r.models.http.reset(textField(b.provider,200),textField(b.model,200));
+      case 'acceptance_start':return r.acceptance.start(textField(b.taskId,200),{durationMs:Number(b.durationMs),...b.intervalMs!==undefined?{intervalMs:Number(b.intervalMs)}:{}});
+      case 'acceptance_stop':return r.acceptance.stop(id());
+      case 'acceptance_compare':return r.acceptance.compare(b.baselineTaskIds as string[],b.candidateTaskIds as string[]);
+      case 'statement_reconcile':return r.acceptance.reconcileStatement(b.lines as Parameters<typeof r.acceptance.reconcileStatement>[0]);
+      case 'skill_maintain':return r.knowledge.maintainSkills();
+      case 'vision_collage':return r.vision.contactSheet(textField(b.app,300));
+      case 'task_subtasks':return r.orchestrator.create(id(),b.tasks as import('../core/orchestrator.js').SubtaskSpec[]);
+      case 'task_group_run':{
+        return r.orchestrator.runSkills(id(),b.assignments as import('../core/orchestrator.js').SkillAssignment[],b.concurrency===undefined?2:Number(b.concurrency));
+      }
       case 'compact':if(!this.nativeCompact)throw Error('NATIVE_COMPACTION_UNAVAILABLE');return this.nativeCompact(r.tasks.get(id()).session_id);
       case 'review':return r.review.review(id());
       default:throw Error('UNKNOWN_OPERATION');
@@ -115,7 +142,21 @@ export class Dashboard {
   }
   private version(v:unknown):number{if(!Number.isSafeInteger(v)||Number(v)<1)throw Error('INVALID_VERSION');return Number(v);}
   private metrics() {
-    return {tasks:this.runtime.store.db.prepare('SELECT status,COUNT(*) AS count FROM tasks GROUP BY status').all(),costByCurrency:this.runtime.store.db.prepare('SELECT b.currency,SUM(b.spent) AS amountMicro,COUNT(CASE WHEN t.status=\'succeeded\' THEN 1 END) AS successes FROM budgets b JOIN tasks t ON t.id=b.task_id GROUP BY b.currency').all(),modelRequests:this.runtime.store.db.prepare('SELECT state,certainty,COUNT(*) AS count FROM model_requests GROUP BY state,certainty').all(),denials:this.runtime.store.db.prepare("SELECT COUNT(*) AS count FROM audit_events WHERE type='ime.model.denied'").get()};
+    const db=this.runtime.store.db;
+    return {tasks:db.prepare('SELECT status,COUNT(*) AS count FROM tasks GROUP BY status').all(),
+      costByCurrency:db.prepare(`SELECT json_extract(u.price,'$.currency') AS currency,SUM(u.amount) AS amountMicro,
+        COUNT(DISTINCT CASE WHEN t.status='succeeded' THEN t.id END) AS successes
+        FROM usage_entries u JOIN reservations r ON r.id=u.reservation_id LEFT JOIN request_trace x ON x.request_id=u.request_id
+        JOIN tasks t ON t.id=COALESCE(x.task_id,r.task_id) GROUP BY currency`).all(),
+      tokenUsage:db.prepare(`SELECT SUM(json_extract(usage,'$.inputTokens')) AS inputTokens,SUM(json_extract(usage,'$.cachedInputTokens')) AS cachedInputTokens,
+        SUM(json_extract(usage,'$.outputTokens')) AS outputTokens FROM usage_entries`).get(),
+      expensiveFailedSteps:db.prepare(`SELECT x.task_id,x.step_id,x.action_id,m.provider,m.model,u.amount,json_extract(u.price,'$.currency') AS currency
+        FROM usage_entries u JOIN request_trace x ON x.request_id=u.request_id JOIN model_requests m ON m.id=u.request_id JOIN tasks t ON t.id=x.task_id
+        WHERE t.status='failed' ORDER BY u.amount DESC LIMIT 10`).all(),
+      budgetAlerts:db.prepare('SELECT task_id,currency,limit_amount,spent,reserved FROM budgets WHERE limit_amount>0 AND (spent+reserved)*1.0/limit_amount>=0.8 ORDER BY spent DESC').all(),
+      forecasts:this.runtime.allowApps.map(app=>({app,...this.runtime.costs.forecast(app,'USD')})),
+      modelRequests:db.prepare('SELECT state,certainty,COUNT(*) AS count FROM model_requests GROUP BY state,certainty').all(),
+      denials:db.prepare("SELECT COUNT(*) AS count FROM audit_events WHERE type='ime.model.denied'").get()};
   }
   async close(){await this.ready.catch(()=>{});this.server.closeIdleConnections();await new Promise<void>(resolve=>this.server.close(()=>resolve()));try{unlinkSync(join(this.runtime.store.dir,'dashboard.url'));}catch{}}
 }

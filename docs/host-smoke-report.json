@@ -14,7 +14,8 @@
     "real tools/result hook persisted in audit",
     "real loader reload and second dispatch",
     "real prepared LLM stream reserves and settles 82 micro-units",
-    "budget denial blocks actual adapter dispatch and pauses session budget"
+    "budget denial blocks actual adapter dispatch and pauses session budget",
+    "managed adaptive model tool uses the real prepared service and charges exactly once"
   ],
   "hostCapabilities": {
     "computerUse": false,
@@ -22,5 +23,5 @@
     "compaction": false,
     "modelGateway": true
   },
-  "verifiedAt": "2026-11-05T08:34:40.303Z"
+  "verifiedAt": "2026-11-13T09:49:23.578Z"
 }

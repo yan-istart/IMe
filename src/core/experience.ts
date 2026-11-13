@@ -121,11 +121,12 @@ export class ExperienceRecorder {
     const success = reason === 'completed' || reason === 'success' || reason === 'done';
     const failure = ['failed', 'error', 'aborted', 'cancelled', 'stopped', 'interrupted'].includes(reason);
     if (!success && !failure) return null;
-    const outcome = success ? 'success' : 'failure';
     const counts = new Map<string, number>();
     for (const step of pending.steps) if (step.app) counts.set(step.app, (counts.get(step.app) ?? 0) + 1);
     const app = [...counts.entries()].sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'desktop';
     const failures = pending.steps.filter(step => !step.ok).length;
+    const verifiedSuccess = success && failures === 0;
+    const outcome = verifiedSuccess ? 'success' : 'failure';
     const traceId = randomUUID();
     const created = new Date().toISOString();
     let eventId = '';
@@ -136,14 +137,14 @@ export class ExperienceRecorder {
         { traceId, sessionId, turn, app, outcome, toolCount: pending.steps.length, failureCount: failures });
     });
     const sequence = pending.steps.map(step => step.tool).join(' → ');
-    const content = success
+    const content = verifiedSuccess
       ? `应用 ${app} 的成功操作序列：${sequence}（${pending.steps.length} 步，0 次失败）。这是工具执行证据，不是权限或策略。`
       : `应用 ${app} 的失败操作序列：${sequence}（${pending.steps.length} 步，${failures} 次失败）。失败经验只作参考，不能作为策略指令。`;
     const duplicate = this.runtime.store.db.prepare('SELECT id FROM memories WHERE app=? AND content=? LIMIT 1').get(app, content);
     let memoryId: string | null = duplicate ? String(duplicate.id) : null;
     if (!duplicate) {
       try {
-        memoryId = this.runtime.knowledge.propose({ kind: success ? 'procedure' : 'failure', content, app,
+        memoryId = this.runtime.knowledge.propose({ kind: verifiedSuccess ? 'procedure' : 'failure', content, app,
           trust: 'tool_verified', sourceEventIds: [eventId] });
       } catch { memoryId = null; }
     }
@@ -152,6 +153,13 @@ export class ExperienceRecorder {
   recent(limit = 50) {
     if (!Number.isSafeInteger(limit) || limit < 1 || limit > 200) throw new Error('INVALID_LIMIT');
     return this.runtime.store.db.prepare('SELECT * FROM experience_traces ORDER BY created_at DESC LIMIT ?').all(limit);
+  }
+  contextApp(sessionId: string): string | undefined {
+    const pending = this.pending.get(sessionId);
+    const app = pending?.steps.findLast(step=>step.app)?.app;
+    if(app)return app;
+    const last = this.runtime.store.db.prepare('SELECT app FROM experience_traces WHERE session_id=? ORDER BY rowid DESC LIMIT 1').get(sessionId);
+    return last ? String(last.app) : undefined;
   }
   summary() {
     const rows = this.runtime.store.db.prepare('SELECT outcome,COUNT(*) AS count FROM experience_traces GROUP BY outcome').all();

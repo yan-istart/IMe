@@ -1,0 +1,229 @@
+{
+  "scope": "20 distinct deterministic mock UI workflows; synthetic usage and fixture prices; no real application or production savings claim",
+  "verifiedAt": "2026-11-13T09:49:22.572Z",
+  "workflows": 20,
+  "baselineSuccesses": 20,
+  "reuseSuccesses": 20,
+  "measurements": [
+    {
+      "workflow": "任务面板",
+      "app": "fixture-app-0",
+      "steps": 3,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 750,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 7.999665999999991,
+      "reuseLatencyMs": 6.860791000000006
+    },
+    {
+      "workflow": "邮件草稿",
+      "app": "fixture-app-1",
+      "steps": 4,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 1060,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 8.178916999999984,
+      "reuseLatencyMs": 6.527375000000006
+    },
+    {
+      "workflow": "日历查询",
+      "app": "fixture-app-2",
+      "steps": 3,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 750,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 7.376165999999984,
+      "reuseLatencyMs": 5.0014170000000036
+    },
+    {
+      "workflow": "表格筛选",
+      "app": "fixture-app-3",
+      "steps": 4,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 1060,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 7.0847920000000215,
+      "reuseLatencyMs": 6.1129999999999995
+    },
+    {
+      "workflow": "文档搜索",
+      "app": "fixture-app-4",
+      "steps": 3,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 750,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 9.445333000000005,
+      "reuseLatencyMs": 4.923709000000031
+    },
+    {
+      "workflow": "文件归档",
+      "app": "fixture-app-5",
+      "steps": 4,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 1060,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 8.790999999999997,
+      "reuseLatencyMs": 5.797750000000008
+    },
+    {
+      "workflow": "图片浏览",
+      "app": "fixture-app-6",
+      "steps": 3,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 750,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 5.7217919999999935,
+      "reuseLatencyMs": 5.474125000000015
+    },
+    {
+      "workflow": "设置修改",
+      "app": "fixture-app-7",
+      "steps": 4,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 1060,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 7.917082999999991,
+      "reuseLatencyMs": 6.152791999999977
+    },
+    {
+      "workflow": "离线报表",
+      "app": "fixture-app-8",
+      "steps": 3,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 750,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 5.999875000000088,
+      "reuseLatencyMs": 5.051666999999952
+    },
+    {
+      "workflow": "联系人查询",
+      "app": "fixture-app-9",
+      "steps": 3,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 750,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 6.46345800000006,
+      "reuseLatencyMs": 4.52962500000001
+    },
+    {
+      "workflow": "音乐列表",
+      "app": "fixture-app-10",
+      "steps": 3,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 750,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 5.449292000000014,
+      "reuseLatencyMs": 4.502624999999966
+    },
+    {
+      "workflow": "购物清单",
+      "app": "fixture-app-11",
+      "steps": 4,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 1060,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 7.14812500000005,
+      "reuseLatencyMs": 5.439916000000039
+    },
+    {
+      "workflow": "库存查询",
+      "app": "fixture-app-12",
+      "steps": 3,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 750,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 5.506249999999909,
+      "reuseLatencyMs": 7.75425000000007
+    },
+    {
+      "workflow": "工单检索",
+      "app": "fixture-app-13",
+      "steps": 4,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 1060,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 6.661082999999962,
+      "reuseLatencyMs": 4.6577499999999645
+    },
+    {
+      "workflow": "离线笔记",
+      "app": "fixture-app-14",
+      "steps": 3,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 750,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 5.727625000000103,
+      "reuseLatencyMs": 4.329540999999949
+    },
+    {
+      "workflow": "地图书签",
+      "app": "fixture-app-15",
+      "steps": 3,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 750,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 5.276624999999967,
+      "reuseLatencyMs": 4.889250000000061
+    },
+    {
+      "workflow": "课程浏览",
+      "app": "fixture-app-16",
+      "steps": 4,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 1060,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 6.658374999999978,
+      "reuseLatencyMs": 23.90975000000003
+    },
+    {
+      "workflow": "仪表盘",
+      "app": "fixture-app-17",
+      "steps": 3,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 750,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 23.990625000000023,
+      "reuseLatencyMs": 6.9211669999999685
+    },
+    {
+      "workflow": "离线账单",
+      "app": "fixture-app-18",
+      "steps": 3,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 750,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 10.926874999999882,
+      "reuseLatencyMs": 7.690458999999919
+    },
+    {
+      "workflow": "阅读进度",
+      "app": "fixture-app-19",
+      "steps": 4,
+      "baselineSuccess": true,
+      "reuseSuccess": true,
+      "baselineCostMicro": 1060,
+      "reuseCostMicro": 0,
+      "baselineLatencyMs": 8.651499999999942,
+      "reuseLatencyMs": 6.135624999999891
+    }
+  ]
+}

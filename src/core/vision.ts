@@ -20,7 +20,12 @@ export class VisionFilter {
     const change = previous ? diff/pixels.length : 1;
     const selected = force || !previous || change > this.threshold;
     // Compare against last retained frame so slow cumulative changes are eventually detected.
-    if (selected) this.previous.set(key,pixels);
+    if (selected) {
+      this.previous.delete(key);this.previous.set(key,pixels);
+      while(this.previous.size>1&&[...this.previous.values()].reduce((sum,value)=>sum+value.byteLength,0)>16000000)this.previous.delete(this.previous.keys().next().value!);
+      while(this.previous.size>32)this.previous.delete(this.previous.keys().next().value!);
+    }
     return { selected, change, timestamp: frame.timestamp };
   }
+  clear(){this.previous.clear();}
 }

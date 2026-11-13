@@ -4,5 +4,8 @@ import {join} from 'node:path';
 const dir=process.argv[2]!;const provider=new MockDesktop();const r=new Runtime({dataDir:dir,allowApps:['mock-app'],desktopLeasePath:join(dir,'desktop.lock')},provider);
 const task=r.tasks.create('crash-session','故障恢复','mock-app','1000');r.tasks.transition(task.id,'ready');r.tasks.transition(task.id,'running');
 r.costs.reserve(task.id,'crashed-request',r.costs.quote({version:'fixture',currency:'USD',inputPerMillion:'1000000',cachedPerMillion:'100000',outputPerMillion:'2000000'},{inputUpperBound:100,maxOutput:50,toolAllowance:'0'}));
+r.acceptance.start(task.id,{durationMs:60000,intervalMs:1000});
+for(let i=0;r.acceptance.status()[0]!.samples===0&&i<100;i++)await new Promise(resolve=>setTimeout(resolve,1));
+if(r.acceptance.status()[0]!.samples===0)throw Error('ACCEPTANCE_SAMPLE_NOT_PERSISTED');
 provider.execute=async()=>{process.kill(process.pid,'SIGKILL');};
 await r.desktop!.run(task.id,{id:'uncertain-action',app:'mock-app',kind:'click',target:'task-panel',risk:'reversible_write',expectedFingerprint:'mock-app:v1:zh:1280x720',timeoutMs:1000},()=>true);

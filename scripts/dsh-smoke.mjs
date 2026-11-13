@@ -37,6 +37,7 @@ export function apply(ctx, config) {
     ctx.llm.registerAdapter(['ime-smoke-model'],{
       providerInfo:provider=>({id:provider,name:'IMe integration fixture'}),
       providerRetryPolicy:()=>undefined,
+      imageRequestPricing:()=>undefined,
       resolveModel:async(provider,model)=>metadata(provider,model),
       prepareCall:async(provider,model)=>({model:metadata(provider,model),stream:async function* (options) {
         modelCalls++;
@@ -121,7 +122,10 @@ export function apply(ctx, config) {
     const audit = readFileSync(join(dataDir,'audit.jsonl'),'utf8').trim().split('\n').map(s=>JSON.parse(s));
     assert.ok(audit.some(e=>e.type==='ime.host.tool_result' && e.data.name==='ime_status'));
     checks.push('real tools/result hook persisted in audit');
-    await entry.update({disabled:false,config:{...entry.options.config,modelBudget:{sessionLimit:'200',routes:[{
+    await entry.update({disabled:false,config:{...entry.options.config,models:{enabled:true,maxAttempts:1},routes:[{
+      provider:'ime-smoke-model',model:'fixture',tier:'cheap',vision:false,tools:false,contextLimit:10000,maxOutput:50,privacyRegion:'local',
+      price:{version:'integration-fixture-only',currency:'USD',inputPerMillion:'1000000',cachedPerMillion:'100000',outputPerMillion:'2000000'},
+    }],modelBudget:{sessionLimit:'200',routes:[{
       provider:'ime-smoke-model',model:'fixture',inputUpperBound:100,maxOutput:50,
       price:{version:'integration-fixture-only',currency:'USD',inputPerMillion:'1000000',cachedPerMillion:'100000',outputPerMillion:'2000000'},
     }]}}});
@@ -143,6 +147,16 @@ export function apply(ctx, config) {
     assert.ok(denied.value.tasks.some(t=>t.app==='ime:model'&&t.status==='paused'));
     checks.push('real prepared LLM stream reserves and settles 82 micro-units');
     checks.push('budget denial blocks actual adapter dispatch and pauses session budget');
+    const managedAgent=ctx.get('agents').get(scriptedSessionId);
+    const managedCreate=await ctx.tools.execute({name:'ime_task_create',arguments:{app:'smoke-app',goal:'受管模型预算验证'},agent:managedAgent,callId:'ime-managed-create',signal:new AbortController().signal});
+    assert.equal(managedCreate.isError,false,JSON.stringify(managedCreate));
+    const managedTaskId=managedCreate.value.task.id,beforeManaged=modelCalls;
+    const managed=await ctx.tools.execute({name:'ime_model_call',arguments:{taskId:managedTaskId,prompt:'fixture',maxOutput:50},agent:managedAgent,callId:'ime-managed-model',signal:new AbortController().signal});
+    assert.equal(managed.isError,false,JSON.stringify(managed));assert.equal(modelCalls,beforeManaged+1);
+    const managedState=await invoke();
+    assert.equal(managedState.value.budgets.find(b=>b.task_id===managedTaskId)?.spent,82);
+    assert.equal(managedState.value.modelGateway.requests.filter(request=>request.id===managed.value.requestId).length,1);
+    checks.push('managed adaptive model tool uses the real prepared service and charges exactly once');
     await entry.update({disabled:true});
     await entry.fiber?.await();
     await wait(()=>!existsSync(join(dataDir,'runtime.lock')));

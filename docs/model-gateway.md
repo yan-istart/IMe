@@ -47,3 +47,17 @@ npm run test:host
 启用真实 guarded 前，应先核实实际 Provider/Model 标识、价格单位、缓存字段和输出控制。不要直接把测试 Provider 或测试价格粘贴进正式桌面配置。模型预算任务中断后保留 paused，需要人工核对账本，再通过管理面板进行验证恢复；没有模型可调用的提额或自动解锁入口。
 
 request_trace 将主请求关联到 IMe taskId、turn、step 和最近 actionId；辅助 purpose 请求不冒用主任务步骤。没有可用关联时字段为 null，不能伪造关联身份。
+
+
+## 受管模型执行入口
+
+`models.enabled` 打开后，`ime_model_call`、配置的模型复盘和按需视觉通过 `HostModelPort` 调用宿主现有 `prepareCall` / `prepared.stream`。IMe 为每次尝试单独预留、记录 model_requests、结算与写入反馈。由受管执行器拥有的请求对象在 `llm/stream` 中跳过第二次计费；真实 DSH 回归验证只进入 Adapter 一次、只结算一笔。
+
+这不扩大 hardLimit 的声明范围：宿主内层 Provider 的隐藏重试和完整输入计费边界仍由目标适配器决定。配置不足时明确拒绝，不自动改写普通对话模型、凭据或未知上界。
+
+
+## 自有 HTTP 请求边界
+
+可配置的 `models.http` 为指定文本模型提供一次性预算凭据门禁。它在创建原生 HTTP request/socket 之前校验报价快照、输入字节与 framing 预算、输出上限、任务及祖先状态，并持久化凭据消费；不调用隐式重试 SDK、不跟随重定向。网络失败和中断保留未知账单，只有可证明未进入传输的预检失败可以释放任务/祖先/聚合预留。Provider 违反已配置上界后持久化阻断该路由，只有本机用户可复核解除。
+
+诊断分别列出 requestBoundaryGuard 和作用域 ime-managed-http；hardLimit 仍为 false，因为远端的隐藏处理、超约定收费和其他插件的直接请求不在此发送器控制中。视觉 HTTP 请求在无法证明计费输入边界时明确拒绝，不通过回退旁路发送。

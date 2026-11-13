@@ -70,6 +70,11 @@
           "type": "number",
           "exclusiveMinimum": 0,
           "exclusiveMaximum": 1
+        },
+        "maxInjectedTokens": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 2000
         }
       },
       "additionalProperties": false
@@ -152,6 +157,91 @@
             ],
             "additionalProperties": false
           }
+        },
+        "sampleFps": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 30
+        },
+        "adaptive": {
+          "type": "boolean",
+          "default": false
+        },
+        "stableWindowMs": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 60000
+        },
+        "states": {
+          "type": "array",
+          "maxItems": 100,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "regions"
+            ],
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "regions": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "roi",
+                    "mean",
+                    "tolerance"
+                  ],
+                  "properties": {
+                    "roi": {
+                      "type": "object",
+                      "properties": {
+                        "x": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "y": {
+                          "type": "integer",
+                          "minimum": 0
+                        },
+                        "width": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "height": {
+                          "type": "integer",
+                          "minimum": 1
+                        }
+                      },
+                      "required": [
+                        "x",
+                        "y",
+                        "width",
+                        "height"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "mean": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 255
+                    },
+                    "tolerance": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 255
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       },
       "additionalProperties": false
@@ -203,6 +293,10 @@
           },
           "uniqueItems": true,
           "default": []
+        },
+        "maintenance": {
+          "type": "boolean",
+          "default": false
         }
       },
       "additionalProperties": false
@@ -330,6 +424,10 @@
           },
           "price": {
             "$ref": "#/$defs/price"
+          },
+          "requestsPerMinute": {
+            "type": "integer",
+            "minimum": 1
           }
         },
         "required": [
@@ -454,6 +552,48 @@
                 "items": {
                   "type": "string"
                 }
+              },
+              "window": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "path",
+                  "allow"
+                ],
+                "properties": {
+                  "path": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "allow": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                }
+              },
+              "permissionPath": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "pngPath": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "attachmentPath": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
               }
             },
             "required": [
@@ -461,6 +601,32 @@
               "fingerprintPath",
               "statePath",
               "actions"
+            ],
+            "allOf": [
+              {
+                "not": {
+                  "required": [
+                    "framePath",
+                    "pngPath"
+                  ]
+                }
+              },
+              {
+                "not": {
+                  "required": [
+                    "framePath",
+                    "attachmentPath"
+                  ]
+                }
+              },
+              {
+                "not": {
+                  "required": [
+                    "pngPath",
+                    "attachmentPath"
+                  ]
+                }
+              }
             ]
           }
         }
@@ -493,6 +659,177 @@
           "maximum": 600000,
           "default": 1500
         }
+      }
+    },
+    "adaptiveTaskBudget": {
+      "type": "boolean",
+      "default": false
+    },
+    "audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxBytes": {
+          "type": "integer",
+          "minimum": 256,
+          "default": 8388608
+        },
+        "retainedFiles": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20,
+          "default": 3
+        }
+      }
+    },
+    "models": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "default": false
+        },
+        "maxAttempts": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3,
+          "default": 2
+        },
+        "privacyRegion": {
+          "type": "string",
+          "minLength": 1
+        },
+        "review": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "provider",
+            "model",
+            "maxOutput"
+          ],
+          "properties": {
+            "provider": {
+              "type": "string",
+              "minLength": 1
+            },
+            "model": {
+              "type": "string",
+              "minLength": 1
+            },
+            "maxOutput": {
+              "type": "integer",
+              "minimum": 1
+            }
+          }
+        },
+        "vision": {
+          "type": "boolean",
+          "default": false
+        },
+        "http": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "provider",
+              "model",
+              "endpoint",
+              "inputOverheadTokens"
+            ],
+            "properties": {
+              "provider": {
+                "type": "string",
+                "minLength": 1
+              },
+              "model": {
+                "type": "string",
+                "minLength": 1
+              },
+              "endpoint": {
+                "type": "string",
+                "format": "uri"
+              },
+              "credentialEnv": {
+                "type": "string",
+                "pattern": "^[A-Z][A-Z0-9_]{0,127}$"
+              },
+              "inputOverheadTokens": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100000
+              },
+              "maxResponseBytes": {
+                "type": "integer",
+                "minimum": 1024,
+                "maximum": 16777216
+              }
+            }
+          }
+        }
+      }
+    },
+    "sync": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "namespace",
+        "keyEnv"
+      ],
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{1,100}$"
+        },
+        "keyEnv": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{0,127}$"
+        },
+        "endpoint": {
+          "type": "string",
+          "format": "uri"
+        },
+        "authorizationEnv": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{0,127}$"
+        }
+      }
+    },
+    "telemetry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "endpoint"
+      ],
+      "properties": {
+        "endpoint": {
+          "type": "string",
+          "format": "uri"
+        },
+        "serviceName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "authorizationEnv": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{0,127}$"
+        },
+        "autoFlushMs": {
+          "type": "integer",
+          "minimum": 1000
+        }
+      }
+    },
+    "desktopAdapters": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 10,
+      "items": {
+        "$ref": "#/properties/desktopAdapter"
       }
     }
   },
